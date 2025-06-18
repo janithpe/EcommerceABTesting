@@ -2,7 +2,7 @@
 Analyzing an A/B Test for an E-commerce Checkout Redesign
 
 ## Project Purpose and Goals
-The goal of this A/B test is to evaluate whether introducing a redesigned e-commerce checkout page increases the **conversion rate** compared to the current version. I intend to make a **data-driven decision** on whether to roll out the new design to all users based on statistical evidence from the experiment.
+The goal of this A/B test is to evaluate whether a redesigned e-commerce checkout page improves the **conversion rate** compared to the current version. Users are randomly assigned to either the control group (existing page) or the treatment group (new design), and their behavior is analyzed using appropriate statistical methods. The purpose is to make a **data-driven decision** on whether to roll out the new design to all users based on clear statistical evidence.
 
 **Primary Objective:**
 > Test the hypothesis that the redesigned checkout page leads to a significantly higher conversion rate.
@@ -11,28 +11,22 @@ The goal of this A/B test is to evaluate whether introducing a redesigned e-comm
 ## Dataset Source and Description
 ### Datasets Used:
 1. `ab_test.csv`
-    - User-level A/B test data including group assignment, landing page version, and conversion status.
+    - Contains user-level data including:
+        - `user_id`: Unique user identifier
+        - `group`: A/B test group assignment (control/treatment)
+        - `landing_page`: Old or New version of the checkout page
+        - `converted`: Whether the user converted (1) or not (0)
     - Size: ~294,478 records before cleaning.
 
 2. `countries_ab.csv`
-    - Mapping of users to their country (US, CA, UK).
-    - Joined with `ab_test.csv` on `user_id`.
-
-### Key Columns:
-| Column        | Description                                 |
-|---------------|---------------------------------------------|
-| `user_id`     | Unique identifier for each user             |
-| `group`       | A/B test group assignment (control/treatment) |
-| `landing_page`| Page seen by the user (`old_page`, `new_page`) |
-| `converted`   | Whether the user completed a conversion     |
-| `country`     | User's country (from `countries_ab.csv`)    |
+    - Contains country information mapped to `user_id`
 
 
 ## Tools and Libraries Used
 | Tool / Library     | Purpose                            |
 |--------------------|------------------------------------|
 | `pandas`           | Data wrangling and transformation  |
-| `matplotlib.pyplot`| Visualization (bar plots)          |
+| `matplotlib.pyplot`| Visualization                      |
 | `seaborn`          | Enhanced visual styling            |
 | `scipy.stats`      | Z-test for proportions             |
 | `numpy`            | Array and mathematical operations  |
@@ -40,12 +34,13 @@ The goal of this A/B test is to evaluate whether introducing a redesigned e-comm
 
 ## How to Run the Code
 1. Place `ab_test.csv` and `countries_ab.csv` in a `Data/` directory.
-2. Run the Python script `AB_Testing.py`.
-3. Required installations (if not already installed):
+2. Install required packages (if not already installed):
 ```bash
 pip install -r Requirements.txt
 ```
-4. Main steps in the code:
+3. Run the Python script or notebook line-by-line.
+
+### Main steps in the code:
    - Load and clean the datasets
    - Validate experimental groups and page assignments
    - Merge in country data
@@ -56,13 +51,6 @@ pip install -r Requirements.txt
 
 
 ## Summary of Results
-### Data Cleaning
-- Removed 1 duplicated user (`user_id`)
-- Removed 3,893 mismatches where group ≠ landing page
-- Final clean dataset size: **290,585 records**
-
----
-
 ### Overall A/B Test Results
 | Group     | Conversion Rate |
 |-----------|------------------|
@@ -74,31 +62,154 @@ pip install -r Requirements.txt
 - P-Value: 0.189
 > **Conclusion:** No statistically significant improvement from the new page.
 
----
+Refer [Executive Summary](https://github.com/janithpe/EcommerceABTesting/blob/main/Executive%20Summary.pdf)
 
-### Country-Level Insights
+
+## Data Cleaning & Validation
+### Issues Found:
+- **3,893** rows where group assignment didn't match the landing page.
+- **1** duplicate `user_id`.
+
+### Cleaning Steps:
+- Removed mismatched rows: Control group should only see `old_page`, and Treatment group should only see `new_page`.
+- Dropped duplicate users, keeping only the first occurrence.
+
+**Final Cleaned Dataset Size:** `290,585` rows
+
+
+## Experiment Design
+This analysis uses a **two-proportion Z-test** to statistically compare the conversion rates of the control and treatment groups.
+
+### Goal:
+Determine whether the redesigned checkout page significantly increases the proportion of users who convert.
+
+### Why Z-Test for Proportions?
+A Z-test for two proportions is the appropriate test here due to the following reasons:
+- **Binary Outcome**: Our outcome is categorical (converted or not), which makes this a test of proportions — not means.
+- **Two Independent Groups**: The control and treatment groups are randomly assigned, ensuring independence.
+- **Large Sample Size**: Both groups have >10 successes and failures, satisfying the assumptions for normal approximation under the **Central Limit Theorem (CLT)**.
+- **Pooled Standard Error**: The Z-test uses a pooled estimate of the conversion rate under the null hypothesis to calculate the standard error.
+
+### Z-Test Formula:
+Let:
+- \( p_1 \), \( p_2 \): Conversion rates for control and treatment groups
+- \( n_1 \), \( n_2 \): Sample sizes of the groups
+- \( \hat{p} = \frac{x_1 + x_2}{n_1 + n_2} \): Pooled proportion
+- \( SE = \sqrt{ \hat{p} (1 - \hat{p}) \left( \frac{1}{n_1} + \frac{1}{n_2} \right) } \)
+
+Then the Z-score is:
+\[
+Z = \frac{p_1 - p_2}{SE}
+\]
+
+The Z-score is then compared to the standard normal distribution to obtain a **p-value**.
+
+### Why Not Other Tests?
+- **t-test**:
+    - Designed to compare **means** of continuous numeric variables (e.g., average time on page) not proportions.
+    - It assumes **normally distributed data**, which binary variables like "converted (yes/no)" do not satisfy.
+    - Using a t-test here would violate assumptions and produce misleading results.
+
+- **Chi-squared Test**:
+    - Appropriate for testing **general independence** between two categorical variables in a contingency table.
+    - It tells us **whether there's an association**, but not the **direction or magnitude** of the difference in proportions.
+    - Less precise and less interpretable than a Z-test for two-group comparisons.
+
+- **Fisher’s Exact Test**:
+    - Ideal for **small sample sizes** or when expected counts are low.
+    - Computationally **inefficient for large datasets** and unnecessary here.
+
+#### Summary Table
+| Test                 | Best For                         | Why Not Suitable Here                  |
+|----------------------|----------------------------------|----------------------------------------|
+| **Z-Test**           | Two proportions (binary outcome) | ✅ Most appropriate choice             |
+| **t-Test**           | Comparing means (continuous)     | ❌ Not for binary data                 |
+| **Chi-squared Test** | Multiple categorical groups      | ❌ Doesn't quantify difference direction|
+| **Fisher’s Exact**   | Small sample, categorical data   | ❌ Inefficient for large N             |
+
+### Assumptions Verified:
+- Random assignment to groups
+- Independent observations
+- Binary outcome
+- Large enough sample for normal approximation
+
+> Therefore, the two-proportion Z-test is statistically sound and justified for evaluating the effect of the new checkout page.
+
+
+## Hypotheses
+Let:
+- ***p***<sub>c</sub> : conversion rate for control
+- ***p***<sub>t</sub> : conversion rate for treatment
+
+### Null Hypothesis (***H***<sub>0</sub>):
+***H***<sub>0</sub> : ***p***<sub>c</sub> = ***p***<sub>t</sub> — There is no difference in conversion rates
+
+### Alternative Hypothesis (***H***<sub>1</sub>):
+***H***<sub>1</sub> : ***p***<sub>c</sub> ≠ ***p***<sub>t</sub> — There **is** a difference in conversion rates
+
+
+## Overall Z-Test for Proportions
+### Conversion Rates:
+| Group     | Converted | Total   | Conversion Rate |
+|-----------|-----------|---------|------------------|
+| Control   | 3,041     | 25,274  | 12.04%           |
+| Treatment | 3,196     | 26,066  | 11.89%           |
+
+### Z-Test Results:
+- **Z-Score:** 1.3109
+- **P-Value:** 0.189
+
+### Interpretation:
+Since \( p = 0.189 > 0.05 \), the null hypothesis **is not rejected**.
+> The new checkout page does not result in a statistically significant improvement in conversions.
+
+
+## Country-Based Insights
+We merged country information and conducted the same test per country.
 | Country | Control CR | Treatment CR | Z-Score | P-Value |
 |---------|------------|--------------|---------|---------|
 | US      | 12.06%     | 11.85%       | 1.51    | 0.132   |
 | CA      | 11.88%     | 11.19%       | 1.30    | 0.195   |
 | UK      | 12.00%     | 12.12%       | -0.47   | 0.635   |
 
-> Across all countries, the differences in conversion were small and **not statistically significant**.
-
----
-
-### Visualizations Created
-- Bar chart of landing page distribution by group (data validation)
-- Conversion rate by country and group
-- Difference in conversion rate per country (treatment - control)
+> None of the differences were statistically significant at the 5% level in any country.
 
 
-## Recommendation
-- Based on both **overall and segmented results**, the **new checkout page does not show statistically significant improvement**.
-- I recommend **not proceeding with a full rollout** of the redesign at this time.
+## Visualizations
+1. Distribution of Landing Pages by Group
+![](img/group_page_dist.png)
+2. Conversion Rate by Country and Group
+![](img/conv_rate_country_group.png)
+3. Difference in Conversion Rate (Treatment - Control)
+![](img/diff_conversion_country.png)
+
+
+## Conclusion
+- There is **no significant evidence** that the redesigned checkout page improves conversion rate — **overall or by country**.
+- The differences between treatment and control are small and likely due to chance.
+
+
+## Recommendations
+Based on the statistical analysis and business context, here are the key recommendations:
+1. **Do Not Roll Out** the new checkout page at this time, as no statistically significant improvement was observed in conversion rates.
+2. **Investigate Design Elements**: Consider A/B testing individual elements (e.g., button text, layout changes) rather than a full redesign.
+3. **Enhance UX Research**: Gather qualitative feedback from users who dropped off during checkout to guide future iterations.
+4. **Explore Targeted Rollouts**: If desired, experiment with the new page on specific segments (e.g., mobile users or returning visitors).
 
 
 ## Next Steps
-- Gather **qualitative feedback** (e.g., user surveys or session recordings) to explore why the new page underperforms.
-- Analyze **conversion by user segments** (device type, browser, traffic source).
-- Run **multivariate or multistep funnel tests** to evaluate isolated changes in the redesign.
+1. **User Feedback**: Collect qualitative data (e.g., user surveys or session recordings) to understand user reactions to the new page.
+2. **Segmented Analysis**: Evaluate performance by browser, device type, or traffic source.
+3. **Multivariate Testing**: Isolate design changes rather than testing a complete redesign.
+4. **Session Replay Analysis**: Use tools like Hotjar to observe behavior flow.
+
+
+## Final Thoughts
+This project showcases a complete A/B testing workflow from data cleaning and hypothesis testing to visualization and insight generation. Statistical rigor, domain knowledge, and practical interpretation are key to making informed decisions.
+<br>
+<br>
+
+---
+
+**Authored by:** *Janith Perera*  
+**Tools:** Python, pandas, statsmodels, matplotlib
