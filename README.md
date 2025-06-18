@@ -59,7 +59,7 @@ pip install -r Requirements.txt
 
 **Z-Test Result:**
 - Z-Score: 1.31
-- P-Value: 0.189
+- p-Value: 0.189
 > **Conclusion:** No statistically significant improvement from the new page.
 
 Refer [Executive Summary](Executive_Summary.pdf)
@@ -92,15 +92,20 @@ A Z-test for two proportions is the appropriate test here due to the following r
 
 ### Z-Test Formula:
 Let:
-- \( p_1 \), \( p_2 \): Conversion rates for control and treatment groups
-- \( n_1 \), \( n_2 \): Sample sizes of the groups
-- \( \hat{p} = \frac{x_1 + x_2}{n_1 + n_2} \): Pooled proportion
-- \( SE = \sqrt{ \hat{p} (1 - \hat{p}) \left( \frac{1}{n_1} + \frac{1}{n_2} \right) } \)
+- $n_1$ : number of users in control group
+- $n_2$ : number of users in treatment group
+- $x_1$ : number of conversions in control group
+- $x_2$ : number of conversions in treatment group
+
+Then compute:
+- $p_1 = x_1/n_1$ : conversion rate for control group
+- $p_2 = x_2/n_2$ : conversion rate for treatment groups
+- $p_{pool} = (x_1 + x_2)/(n_1 + n_2)$ : pooled proportion
+- Standard error (SE):
+$$ SE = \sqrt{p_{pool} \left(1-p_{pool} \right) \left(\frac{1}{n_1} + \frac{1}{n_2} \right)} $$
 
 Then the Z-score is:
-\[
-Z = \frac{p_1 - p_2}{SE}
-\]
+$$ Z = \frac{p_1 - p_2}{SE} $$
 
 The Z-score is then compared to the standard normal distribution to obtain a **p-value**.
 
@@ -138,14 +143,17 @@ The Z-score is then compared to the standard normal distribution to obtain a **p
 
 ## Hypotheses
 Let:
-- ***p***<sub>c</sub> : conversion rate for control
-- ***p***<sub>t</sub> : conversion rate for treatment
+- $p_c$ : conversion rate for control
+- $p_t$ : conversion rate for treatment
 
-### Null Hypothesis (***H***<sub>0</sub>):
-***H***<sub>0</sub> : ***p***<sub>c</sub> = ***p***<sub>t</sub> — There is no difference in conversion rates
+### Null Hypothesis $(H_0)$:
+$H_0$ : $p_c = p_t$ — There is no difference in conversion rates
 
-### Alternative Hypothesis (***H***<sub>1</sub>):
-***H***<sub>1</sub> : ***p***<sub>c</sub> ≠ ***p***<sub>t</sub> — There **is** a difference in conversion rates
+### Alternative Hypothesis $(H_1)$:
+$H_1$ : $p_c \neq p_t$ — There **is** a difference in conversion rates
+
+if **p-value $<$ 0.05**, reject $H_0$: there's a significant difference  
+if **p-value $\geq$ 0.05**, fail to reject $H_0$: no significant difference
 
 
 ## Overall Z-Test for Proportions
@@ -157,16 +165,16 @@ Let:
 
 ### Z-Test Results:
 - **Z-Score:** 1.3109
-- **P-Value:** 0.189
+- **p-Value:** 0.189
 
 ### Interpretation:
-Since \( p = 0.189 > 0.05 \), the null hypothesis **is not rejected**.
+Since p-value = 0.189 > 0.05, the null hypothesis **is not rejected**.
 > The new checkout page does not result in a statistically significant improvement in conversions.
 
 
 ## Country-Based Insights
 We merged country information and conducted the same test per country.
-| Country | Control CR | Treatment CR | Z-Score | P-Value |
+| Country | Control CR | Treatment CR | Z-Score | p-Value |
 |---------|------------|--------------|---------|---------|
 | US      | 12.06%     | 11.85%       | 1.51    | 0.132   |
 | CA      | 11.88%     | 11.19%       | 1.30    | 0.195   |
