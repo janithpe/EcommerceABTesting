@@ -62,12 +62,12 @@ pip install -r Requirements.txt
 - P-Value: 0.189
 > **Conclusion:** No statistically significant improvement from the new page.
 
-Refer [Executive Summary](https://github.com/janithpe/EcommerceABTesting/blob/main/Executive%20Summary.pdf)
+Refer [Executive Summary](Executive_Summary.pdf)
 
 
 ## Data Cleaning & Validation
 ### Issues Found:
-- **3,893** rows where group assignment didn't match the landing page.
+- **3,893** rows (≈1.32%) where group assignment didn't match the landing page.
 - **1** duplicate `user_id`.
 
 ### Cleaning Steps:
