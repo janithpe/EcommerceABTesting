@@ -102,10 +102,14 @@ Then compute:
 - $p_2 = x_2/n_2$ : conversion rate for treatment groups
 - $p_{pool} = (x_1 + x_2)/(n_1 + n_2)$ : pooled proportion
 - Standard error (SE):
-$$ SE = \sqrt{p_{pool} \left(1-p_{pool} \right) \left(\frac{1}{n_1} + \frac{1}{n_2} \right)} $$
+```math
+SE = \sqrt{p_{pool} \left(1-p_{pool} \right) \left(\frac{1}{n_1} + \frac{1}{n_2} \right)}
+```
 
 Then the Z-score is:
-$$ Z = \frac{p_1 - p_2}{SE} $$
+```math
+Z = \frac{p_1 - p_2}{SE} 
+```
 
 The Z-score is then compared to the standard normal distribution to obtain a **p-value**.
 
